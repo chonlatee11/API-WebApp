@@ -202,7 +202,6 @@ app.get("/getAdmin", jsonParser, function (req, res) {
           } else {
             console.log(data.length);
             res.json({ data });
-            // connection.end();
             connection.release();
           }
         }
@@ -461,10 +460,9 @@ app.get("/DiseaseAllReport", jsonParser, function (req, res) {
             for (let i = 0; i < data.length; i++) {
               // กลับมาแก้ตรงนี้ image URl port ต้องเปลี่ยน
               data[i].ImageUrl =
-                "http://192.168.1.22:3030/image/" + data[i].DiseaseImage;
+                "http://192.168.1.22:3032/image/" + data[i].DiseaseImage;
             }
             res.json({ data });
-            // connection.end();
             connection.release();
           }
         }
@@ -493,7 +491,6 @@ app.post("/getSelectUser", jsonParser, function (req, res) {
               connection.release();
             } else {
               res.json({ data });
-              // connection.end();
               connection.release();
             }
           }
@@ -523,7 +520,6 @@ app.post("/getSelectDesease", jsonParser, function (req, res) {
               connection.release();
             } else {
               res.json({ data });
-              // connection.end();
               connection.release();
             }
           }
@@ -553,7 +549,6 @@ app.post("/getSelectResearch", jsonParser, function (req, res) {
               connection.release();
             } else {
               res.json({ data });
-              // connection.end();
               connection.release();
             }
           }
