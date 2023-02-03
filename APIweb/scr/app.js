@@ -1,18 +1,18 @@
 var express = require("express");
 var cors = require("cors");
-var app = express();
 var bodyParser = require("body-parser");
 var jsonParser = bodyParser.json();
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 const secret = "LoginWeb";
 
+var app = express();
 app.use(cors());
 
-var mysql = require("mysql");
-var poolCluster = mysql.createPoolCluster();
+const mysql = require("mysql");
+const poolCluster = mysql.createPoolCluster();
 poolCluster.add("node0", {
-  host: "192.168.1.22",
+  host: "127.0.0.1",
   port: "3306",
   database: "mymariaDB",
   user: "devchon",
@@ -336,7 +336,7 @@ app.get("/getResearch", jsonParser, function (req, res) {
 
 app.put("/HistoryDiseaseModify", jsonParser, function (req, res, next) {
   console.log(req.body);
-  let imagelink = "http://192.168.1.22:3032/image/" + req.body.ImageNameUpdate;
+  let imagelink = "http://127.0.0.1:3032/image/" + req.body.ImageNameUpdate;
   poolCluster.getConnection(function (err, connection) {
     if (err) {
       console.log(err);
@@ -458,9 +458,8 @@ app.get("/DiseaseAllReport", jsonParser, function (req, res) {
           } else {
             console.log(data.length);
             for (let i = 0; i < data.length; i++) {
-              // กลับมาแก้ตรงนี้ image URl port ต้องเปลี่ยน
               data[i].ImageUrl =
-                "http://192.168.1.22:3032/image/" + data[i].DiseaseImage;
+                "http://127.0.0.1:3032/image/" + data[i].DiseaseImage;
             }
             res.json({ data });
             connection.release();
