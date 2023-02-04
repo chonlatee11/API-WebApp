@@ -336,7 +336,12 @@ app.get("/getResearch", jsonParser, function (req, res) {
 
 app.put("/HistoryDiseaseModify", jsonParser, function (req, res, next) {
   console.log(req.body);
-  let imagelink = "http://127.0.0.1:3032/image/" + req.body.ImageNameUpdate;
+  let imagelink
+  if (req.body.ImageNameUpdate == null) {
+    imagelink = "null";
+  }else{
+    imagelink = "http://127.0.0.1:3032/image/" + req.body.ImageNameUpdate;
+  }
   poolCluster.getConnection(function (err, connection) {
     if (err) {
       console.log(err);
