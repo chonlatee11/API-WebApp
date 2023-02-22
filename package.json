@@ -1,0 +1,34 @@
+{
+  "name": "nodejswebapi",
+  "version": "1.0.0",
+  "description": "NodeJs Web API With Express and MariaDB",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start:dev": "nodemon src/index.js",
+    "start:prod": "node src/index.js"
+  },
+  "keywords": [
+    "NodeJs",
+    "Express",
+    "MariaDB",
+    "API"
+  ],
+  "author": "DevChonlatee",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "body-parser": "^1.20.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "ip": "^1.1.8",
+    "jsonwebtoken": "^9.0.0",
+    "mysql": "^2.18.1",
+    "pino": "^8.9.0",
+    "pino-pretty": "^9.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
