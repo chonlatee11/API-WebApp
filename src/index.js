@@ -5,6 +5,7 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import database from "./config/mysql.config.js";
+import { sendMail } from "./mail/sendmail.js";
 import logger from "./util/logger.js";
 import bodyParser from "body-parser";
 const jsonParser = bodyParser.json();
@@ -127,6 +128,32 @@ app.put("/AddAdmin", jsonParser, function (req, res, next) {
       });
     }
   });
+});
+
+app.post('/send-email', function(req, res) {
+  const emailDestination = req.body.email;
+  
+  sendMail(emailDestination).then((result) => {
+
+    res.json({ result });
+  })
+  
+});
+
+app.get('/verify/:token', function(req, res) {
+  const token = req.params.token;
+  try {
+    const decoded = jwt.verify(token, 'secret_key');
+    const email = decoded.email;
+    const verificationToken = decoded.verificationToken;
+
+    // Verify the user's email address using the email and verificationToken
+    res.send('ยืนยันอีเมลสำเร็จ');
+  } catch (err) {
+    console.log(err);
+    res.send('Error: ' + err.message);
+  }
+
 });
 
 app.delete("/deleteAdmin", jsonParser, function (req, res, next) {
