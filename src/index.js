@@ -5,7 +5,7 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import database from "./config/mysql.config.js";
-import { sendMail } from "./mail/sendmail.js";
+import { sendMailAdmin, sendMailResearch } from "./mail/sendmail.js";
 import logger from "./util/logger.js";
 import bodyParser from "body-parser";
 const jsonParser = bodyParser.json();
@@ -49,6 +49,7 @@ app.post("/loginADMIN", jsonParser, function (req, res, next) {
                   token,
                   email: element.Email,
                   AdminID: 1,
+                  emailVerify: "Verify",
                 });
                 connection.release();
               } else {
@@ -71,6 +72,7 @@ app.post("/loginADMIN", jsonParser, function (req, res, next) {
                         status: "AdminLogin",
                         token,
                         AdminID: element.adminID,
+                        emailVerify: element.EmailVerify,
                       });
                       connection.release();
                     } else {
@@ -130,30 +132,35 @@ app.put("/AddAdmin", jsonParser, function (req, res, next) {
   });
 });
 
-app.post('/send-email', function(req, res) {
+app.post('/send-email/admin', function(req, res) {
   const emailDestination = req.body.email;
-  
-  sendMail(emailDestination).then((result) => {
-
-    res.json({ result });
-  })
-  
+  sendMailAdmin(emailDestination, res)
 });
 
-app.get('/verify/:token', function(req, res) {
+app.get('/verify/admin:token', function(req, res) {
   const token = req.params.token;
-  try {
-    const decoded = jwt.verify(token, 'secret_key');
-    const email = decoded.email;
-    const verificationToken = decoded.verificationToken;
-
-    // Verify the user's email address using the email and verificationToken
-    res.send('ยืนยันอีเมลสำเร็จ');
-  } catch (err) {
-    console.log(err);
-    res.send('Error: ' + err.message);
-  }
-
+  jwt.verify(token, secret, function(err, decoded) {
+    if (err) {
+      // console.log(err);
+      return res.send('Error: ' + err.message);
+    }
+    const email = decoded.emailDestination;
+    // console.log("🚀 ~ file: index.js:160 ~ jwt.verify ~ email:", email)
+    database.getConnection(function(err, connection) {
+      if (err) {
+        // console.log(err);
+        return res.send('เกิดข้อผิดพลาด' + err.message);
+      }
+    connection.query('UPDATE `Admin` SET `EmailVerify` = ? WHERE `Admin`.`Email` = ?', ['Verify' ,email], function(error) {
+      if (error) {
+        // console.log(error);
+        return res.send('เกิดข้อผิดพลาด: ' + error.message);
+      }
+      // console.log('User registered:', email);
+      res.send('ยืนยันอีเมลสำเร็จ');
+    });
+  });
+});
 });
 
 app.delete("/deleteAdmin", jsonParser, function (req, res, next) {
@@ -199,13 +206,14 @@ app.patch("/updateAdmin", jsonParser, function (req, res, next) {
           connection.release();
         } else {
           connection.query(
-            "UPDATE `Admin` SET `fName` = ?, `lName` = ?, `Email` = ?, `passWord` = ?, `modifydate` = ? WHERE `Admin`.`Email` = ?",
+            "UPDATE `Admin` SET `fName` = ?, `lName` = ?, `Email` = ?, `passWord` = ?, `modifydate` = ?, `EmailVerify` = ? WHERE `Admin`.`Email` = ?",
             [
               req.body.fname,
               req.body.lname,
               req.body.emailupdate,
               hash,
               req.body.modifydate,
+              req.body.EmailVerify,
               req.body.email,
             ],
             function (err) {
@@ -292,6 +300,37 @@ app.put("/AddResearch", jsonParser, function (req, res, next) {
   });
 });
 
+app.post('/send-email/research', function(req, res) {
+  const emailDestination = req.body.email;
+  sendMailResearch(emailDestination, res)
+});
+
+app.get('/verify/research:token', function(req, res) {
+  const token = req.params.token;
+  jwt.verify(token, secret, function(err, decoded) {
+    if (err) {
+      // console.log(err);
+      return res.send('Error: ' + err.message);
+    }
+    const email = decoded.emailDestination;
+    // console.log("🚀 ~ file: index.js:160 ~ jwt.verify ~ email:", email)
+    database.getConnection(function(err, connection) {
+      if (err) {
+        // console.log(err);
+        return res.send('เกิดข้อผิดพลาด' + err.message);
+      }
+    connection.query('UPDATE `Researcher` SET `EmailVerify` = ? WHERE `Researcher`.`Email` = ?', ['Verify' ,email], function(error) {
+      if (error) {
+        // console.log(error);
+        return res.send('เกิดข้อผิดพลาด: ' + error.message);
+      }
+      // console.log('User registered:', email);
+      res.send('ยืนยันอีเมลสำเร็จ');
+    });
+  });
+});
+});
+
 app.delete("/deleteResearch", jsonParser, function (req, res, next) {
   //   console.log(req.body);
   database.getConnection(function (err, connection) {
@@ -319,11 +358,11 @@ app.delete("/deleteResearch", jsonParser, function (req, res, next) {
 });
 
 app.patch("/updateResearch", jsonParser, function (req, res, next) {
-  console.log(req.body);
+  // console.log(req.body);
   const saltRounds = 10;
   const myPlaintextPassword = req.body.password;
   bcrypt.hash(myPlaintextPassword, saltRounds, function (err, hash) {
-    console.log(hash);
+    // console.log(hash);
     if (err) {
       //   console.log(err);
       res.json({ err });
@@ -335,13 +374,14 @@ app.patch("/updateResearch", jsonParser, function (req, res, next) {
           connection.release();
         } else {
           connection.query(
-            "UPDATE `Researcher` SET `fName` = ?, `lName` = ?, `Email` = ?, `passWord` = ?, `Modifydate` = ? WHERE `Researcher`.`Email` = ?",
+            "UPDATE `Researcher` SET `fName` = ?, `lName` = ?, `Email` = ?, `passWord` = ?, `Modifydate` = ? ,`EmailVerify` = ? WHERE `Researcher`.`Email` = ?",
             [
               req.body.fname,
               req.body.lname,
               req.body.emailupdate,
               hash,
               req.body.modifydate,
+              req.body.EmailVerify,
               req.body.email,
             ],
             function (err) {
@@ -349,7 +389,7 @@ app.patch("/updateResearch", jsonParser, function (req, res, next) {
                 res.json({ err });
                 connection.release();
               } else {
-                console.log("update success");
+                // console.log("update success");
                 res.json({ status: "success" });
                 connection.release();
               }
@@ -487,6 +527,7 @@ app.post("/ResearcherLogin", jsonParser, function (req, res, next) {
                       status: "ResearcherLogin",
                       token,
                       ReseachID: element.researcherID,
+                      emailVerify: element.EmailVerify,
                     });
                     connection.release();
                   } else {
