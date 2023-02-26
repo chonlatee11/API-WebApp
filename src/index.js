@@ -430,7 +430,7 @@ app.get("/getResearch", jsonParser, function (req, res) {
 
 app.put("/HistoryDiseaseModify", jsonParser, function (req, res, next) {
   //   console.log(req.body);
-  const imagelink = `http://${myip}:3002/image/` + req.body.ImageNameUpdate;
+  const imagelink = `${myip}:3002/image/` + req.body.ImageNameUpdate;
   database.getConnection(function (err, connection) {
     if (err) {
       //   console.log(err);
@@ -569,7 +569,7 @@ app.get("/DiseaseAllReport", jsonParser, function (req, res) {
             // console.log(data.length);
             for (let i = 0; i < data.length; i++) {
               data[i].ImageUrl =
-                `http://${myip}:3002/image/` + data[i].DiseaseImage;
+                `${myip}:3002/image/` + data[i].DiseaseImage;
             }
             res.json({ data });
             connection.release();
@@ -589,38 +589,7 @@ app.post("/getSelectUser", jsonParser, function (req, res) {
       connection.release();
     } else {
       connection.query(
-        "SELECT * FROM `User` WHERE fName LIKE ? OR lName LIKE ?;",
-        [req.body.Name, req.body.Name],
-        function (err, data) {
-          if (err) {
-            res.json({ err });
-            connection.release();
-          } else {
-            // console.log(data.length);
-            if (data.length == 0) {
-              res.json({ data: 401, status: 401 });
-              connection.release();
-            } else {
-              res.json({ data });
-              connection.release();
-            }
-          }
-        }
-      );
-    }
-  });
-});
-
-app.post("/getSelectDesease", jsonParser, function (req, res) {
-  //   console.log(req.body);
-  database.getConnection(function (err, connection) {
-    if (err) {
-      //   console.log(err);
-      res.json({ err });
-      connection.release();
-    } else {
-      connection.query(
-        "SELECT * FROM `DiseaseReport` WHERE DiseaseName LIKE ?;",
+        "SELECT USER.*, COUNT(DiseaseReport.ReportID) AS ReportCount FROM `User` USER LEFT JOIN DiseaseReport ON USER.UserID = DiseaseReport.UserID WHERE USER.fName LIKE ? OR USER.lName LIKE ? GROUP BY USER.UserID;",
         [req.body.Name, req.body.Name],
         function (err, data) {
           if (err) {
